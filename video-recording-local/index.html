@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频录制示例</title>
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .video-container {
+      margin: 20px 0;
+    }
+    #videoPreview {
+      width: 100%;
+      max-width: 640px;
+      background: #000;
+    }
+    .controls {
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .timer {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #333;
+    }
+    .recordings-list {
+      margin-top: 30px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    .recordings-list h2 {
+      margin-bottom: 15px;
+    }
+    .recording-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: #f9f9f9;
+    }
+    .recording-info {
+      flex: 1;
+    }
+    .recording-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .recording-details {
+      font-size: 14px;
+      color: #666;
+    }
+    .recording-actions {
+      margin-left: 15px;
+    }
+    .recording-actions button {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+    #recordBtn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    #recordBtn.recording {
+      background-color: #f44336;
+    }
+    /* 预览模态框样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 90%;
+      max-height: 90vh;
+      position: relative;
+    }
+    .modal-video {
+      width: 100%;
+      max-height: 70vh;
+      background: #000;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #fff;
+      background: none;
+      border: none;
+      padding: 5px 10px;
+    }
+    .modal-title {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>视频录制示例</h1>
+    <div class="video-container">
+      <video id="videoPreview" autoplay playsinline></video>
+    </div>
+    <div class="timer" id="timer">00:00:00</div>
+    <div class="controls">
+      <button id="recordBtn">开始录制</button>
+    </div>
+    
+    <div class="recordings-list">
+      <h2>录制历史</h2>
+      <div id="recordingsList"></div>
+    </div>
+  </div>
+
+  <!-- 预览模态框 -->
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closePreview()">&times;</button>
+      <div class="modal-title" id="previewTitle"></div>
+      <video id="previewVideo" class="modal-video" controls></video>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>

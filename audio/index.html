@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录音播放示例</title>
+  <style>
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: center;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+    }
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #status {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>录音播放示例</h1>
+    <div id="status">准备就绪</div>
+    <button id="startBtn" class="btn">开始录音</button>
+    <button id="stopBtn" class="btn" disabled>停止录音</button>
+    <button id="playBtn" class="btn" disabled>播放录音</button>
+    <audio id="audioPlayer" controls style="display: none;"></audio>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>
