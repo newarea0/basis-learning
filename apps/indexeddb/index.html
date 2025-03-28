@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IndexedDB 笔记应用</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+    .form-container {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .notes-container {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .note-item {
+      background-color: #f9f9f9;
+      border-left: 3px solid #4CAF50;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .note-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .edit-btn {
+      background-color: #2196F3;
+    }
+    .edit-btn:hover {
+      background-color: #0b7dda;
+    }
+    .delete-btn {
+      background-color: #f44336;
+    }
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      display: block;
+    }
+    .error {
+      background-color: #f2dede;
+      color: #a94442;
+      display: block;
+    }
+    .db-info {
+      background-color: #e7f3fe;
+      border-left: 3px solid #2196F3;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>IndexedDB 笔记应用</h1>
+  
+  <div class="db-info">
+    <p><strong>数据库名称:</strong> notes_db</p>
+    <p><strong>版本:</strong> <span id="dbVersion">1</span></p>
+    <p><strong>状态:</strong> <span id="dbStatus">未连接</span></p>
+  </div>
+  
+  <div id="statusMessage" class="status"></div>
+  
+  <div class="container">
+    <div class="form-container">
+      <h2>添加/编辑笔记</h2>
+      <form id="noteForm">
+        <input type="hidden" id="noteId">
+        <div class="form-group">
+          <label for="title">标题</label>
+          <input type="text" id="title" required>
+        </div>
+        <div class="form-group">
+          <label for="content">内容</label>
+          <textarea id="content" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="category">分类</label>
+          <input type="text" id="category">
+        </div>
+        <button type="submit" id="saveButton">保存笔记</button>
+        <button type="button" id="resetButton">重置表单</button>
+      </form>
+    </div>
+    
+    <div class="notes-container">
+      <h2>笔记列表</h2>
+      <div>
+        <label for="categoryFilter">按分类筛选:</label>
+        <input type="text" id="categoryFilter">
+        <button id="filterButton">筛选</button>
+        <button id="clearFilterButton">清除筛选</button>
+      </div>
+      <div id="notesList"></div>
+    </div>
+  </div>
+  
+  <script>
+    // IndexedDB 变量
+    let db;
+    const DB_NAME = 'notes_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'notes';
+    
+    // DOM 元素
+    const noteForm = document.getElementById('noteForm');
+    const noteIdInput = document.getElementById('noteId');
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const categoryInput = document.getElementById('category');
+    const saveButton = document.getElementById('saveButton');
+    const resetButton = document.getElementById('resetButton');
+    const notesList = document.getElementById('notesList');
+    const statusMessage = document.getElementById('statusMessage');
+    const dbVersionElement = document.getElementById('dbVersion');
+    const dbStatusElement = document.getElementById('dbStatus');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const filterButton = document.getElementById('filterButton');
+    const clearFilterButton = document.getElementById('clearFilterButton');
+    
+    // 初始化数据库
+    function initDatabase() {
+      dbVersionElement.textContent = DB_VERSION;
+      dbStatusElement.textContent = '正在连接...';
+      
+      // 打开数据库连接
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      
+      // 处理数据库打开错误
+      request.onerror = function(event) {
+        showStatus('数据库打开失败: ' + event.target.error, 'error');
+        dbStatusElement.textContent = '连接失败';
+      };
+      
+      // 数据库需要升级（第一次创建或版本更新）
+      request.onupgradeneeded = function(event) {
+        showStatus('正在创建/升级数据库...', 'success');
+        
+        // 保存 IDBDatabase 接口
+        const db = event.target.result;
+        
+        // 如果存在旧的对象存储，则删除它
+        if (db.objectStoreNames.contains(STORE_NAME)) {
+          db.deleteObjectStore(STORE_NAME);
+        }
+        
+        // 创建一个对象存储，使用 'id' 作为键路径
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        
+        // 创建索引：标题、分类、创建时间
+        objectStore.createIndex('title', 'title', { unique: false });
+        objectStore.createIndex('category', 'category', { unique: false });
+        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
+        
+        showStatus('数据库设置完成', 'success');
+      };
+      
+      // 数据库打开成功
+      request.onsuccess = function(event) {
+        db = event.target.result;
+        dbStatusElement.textContent = '已连接';
+        showStatus('数据库连接成功', 'success');
+        
+        // 显示所有笔记
+        displayNotes();
+        
+        // 监听数据库关闭事件
+        db.onversionchange = function() {
+          db.close();
+          showStatus('数据库被其他标签页更新，请刷新页面', 'error');
+          dbStatusElement.textContent = '已断开';
+        };
+      };
+    }
+    
+    // 显示状态消息
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status ' + type;
+      
+      // 3秒后自动隐藏消息
+      setTimeout(() => {
+        statusMessage.style.display = 'none';
+      }, 3000);
+    }
+    
+    // 添加/更新笔记
+    function saveNote(event) {
+      event.preventDefault();
+      
+      const title = titleInput.value.trim();
+      const content = contentInput.value.trim();
+      const category = categoryInput.value.trim();
+      const id = noteIdInput.value ? parseInt(noteIdInput.value) : null;
+      
+      if (!title || !content) {
+        showStatus('请填写标题和内容', 'error');
+        return;
+      }
+      
+      // 创建笔记对象
+      const note = {
+        title,
+        content,
+        category,
+        createdAt: new Date().toISOString()
+      };
+      
+      // 如果有ID，则表示是更新操作
+      if (id) {
+        note.id = id;
+      }
+      
+      // 开始一个事务
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      
+      // 获取对象存储
+      const objectStore = transaction.objectStore(STORE_NAME);
+      
+      // 添加/更新笔记
+      const request = id ? objectStore.put(note) : objectStore.add(note);
+      
+      request.onsuccess = function() {
+        showStatus(id ? '笔记更新成功' : '笔记添加成功', 'success');
+        resetForm();
+        displayNotes();
+      };
+      
+      request.onerror = function(event) {
+        showStatus('操作失败: ' + event.target.error, 'error');
+      };
+      
+      // 处理事务完成
+      transaction.oncomplete = function() {
+        console.log('事务完成');
+      };
+      
+      // 处理事务错误
+      transaction.onerror = function(event) {
+        showStatus('事务错误: ' + event.target.error, 'error');
+      };
+    }
+    
+    // 显示所有笔记
+    function displayNotes(categoryFilterValue = '') {
+      if (!db) {
+        showStatus('数据库未连接', 'error');
+        return;
+      }
+      
+      // 清空笔记列表
+      notesList.innerHTML = '';
+      
+      // 开始一个事务
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(STORE_NAME);
+      
+      let request;
+      
+      // 如果有分类筛选，使用索引查询
+      if (categoryFilterValue) {
+        const index = objectStore.index('category');
+        request = index.getAll(categoryFilterValue);
+      } else {
+        // 否则获取所有笔记
+        request = objectStore.getAll();
+      }
+      
+      request.onsuccess = function(event) {
+        const notes = event.target.result;
+        
+        if (notes.length === 0) {
+          notesList.innerHTML = '<p>暂无笔记</p>';
+          return;
+        }
+        
+        // 显示笔记
+        notes.forEach(note => {
+          const noteElement = document.createElement('div');
+          noteElement.className = 'note-item';
+          noteElement.innerHTML = `
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
+            <p><strong>分类:</strong> ${note.category || '无分类'}</p>
+            <p><strong>创建时间:</strong> ${new Date(note.createdAt).toLocaleString()}</p>
+            <div class="note-actions">
+              <button class="edit-btn" data-id="${note.id}">编辑</button>
+              <button class="delete-btn" data-id="${note.id}">删除</button>
+            </div>
+          `;
+          notesList.appendChild(noteElement);
+        });
+        
+        // 添加编辑按钮事件
+        document.querySelectorAll('.edit-btn').forEach(button => {
+          button.addEventListener('click', editNote);
+        });
+        
+        // 添加删除按钮事件
+        document.querySelectorAll('.delete-btn').forEach(button => {
+          button.addEventListener('click', deleteNote);
+        });
+      };
+      
+      request.onerror = function(event) {
+        showStatus('获取笔记失败: ' + event.target.error, 'error');
+      };
+    }
+    
+    // 编辑笔记
+    function editNote(event) {
+      const noteId = parseInt(event.target.getAttribute('data-id'));
+      
+      // 获取笔记数据
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const objectStore = transaction.objectStore(STORE_NAME);
+      const request = objectStore.get(noteId);
+      
+      request.onsuccess = function(event) {
+        const note = event.target.result;
+        
+        // 填充表单
+        noteIdInput.value = note.id;
+        titleInput.value = note.title;
+        contentInput.value = note.content;
+        categoryInput.value = note.category || '';
+        
+        // 修改按钮文本
+        saveButton.textContent = '更新笔记';
+      };
+      
+      request.onerror = function(event) {
+        showStatus('获取笔记详情失败: ' + event.target.error, 'error');
+      };
+    }
+    
+    // 删除笔记
+    function deleteNote(event) {
+      const noteId = parseInt(event.target.getAttribute('data-id'));
+      
+      if (confirm('确定要删除这个笔记吗？')) {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const objectStore = transaction.objectStore(STORE_NAME);
+        const request = objectStore.delete(noteId);
+        
+        request.onsuccess = function() {
+          showStatus('笔记删除成功', 'success');
+          displayNotes(categoryFilter.value.trim());
+        };
+        
+        request.onerror = function(event) {
+          showStatus('删除笔记失败: ' + event.target.error, 'error');
+        };
+      }
+    }
+    
+    // 重置表单
+    function resetForm() {
+      noteForm.reset();
+      noteIdInput.value = '';
+      saveButton.textContent = '保存笔记';
+    }
+    
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化数据库
+      initDatabase();
+      
+      // 表单提交事件
+      noteForm.addEventListener('submit', saveNote);
+      
+      // 重置按钮事件
+      resetButton.addEventListener('click', resetForm);
+      
+      // 筛选按钮事件
+      filterButton.addEventListener('click', function() {
+        displayNotes(categoryFilter.value.trim());
+      });
+      
+      // 清除筛选按钮事件
+      clearFilterButton.addEventListener('click', function() {
+        categoryFilter.value = '';
+        displayNotes();
+      });
+    });
+  </script>
+</body>
+</html>
