@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathJax 学习示例</title>
+    <script>
+
+        MathJax = {
+            loader: {
+                load: ['[tex]/color', '[tex]/tagformat', 'output/svg']
+            },
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                tags: 'all', // 表达式右侧显示编号
+                packages: {
+                    '[+]': ['color', 'tagformat']
+                },
+                color: {
+                    padding: '5px'
+                },
+
+                tagSide: 'left', // 设置编号位置
+                macros: {
+                    RR: '{\\bf R}',
+                    bold: ['{\\bf #1}',1]
+                },
+                tagformat: {
+                    tag: (n) => '[' + n + ']' // 设置编号格式
+                }
+            },
+            messageStyle: 'none', // 不显示信息
+            options: {
+                // 关闭右键菜单
+                enableMenu: false,
+                // a11y: false
+                a11y: {
+                    // doc: https://docs.mathjax.org/en/latest/options/accessibility.html#id3
+                    speech: false, // switch on speech output
+                    braille: false, // switch on Braille output
+                    subtitles: false, // show speech as a subtitle
+                    viewBraille: false // display Braille output as subtitles
+                }
+            },
+            svg: {
+                fontCache: 'global'
+            } // 使用全局字体缓存
+          
+        };
+    </script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script> -->
+
+     <!-- <script src="./node_modules/mathjax/tex-mml-chtml.js"></script> -->
+     <!-- <script src="./node_modules/mathjax/tex-svg.js"></script> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .example {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .code {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>MathJax 学习示例</h1>
+
+    <!-- MathML -->
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+      <mi>a</mi><mo>&#x2260;</mo><mn>0</mn>
+    </math>,
+    there are two solutions to
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+      <mi>a</mi><msup><mi>x</mi><mn>2</mn></msup>
+      <mo>+</mo> <mi>b</mi><mi>x</mi>
+      <mo>+</mo> <mi>c</mi> <mo>=</mo> <mn>0</mn>
+    </math>
+
+    <div>$$x^{1.01}$$</div>
+    <div>$$a < b$$</div>
+    <div>$$a<b$$</div>
+
+    <!-- TeX 和 LaTeX  -->
+    <div class="example">
+        <h2>1. 行内数学公式</h2>
+        <p>欧拉公式：$e^{i\pi} + 1 < 0$</p>
+        <p>欧拉公式：\(e^{i\pi} + 1 < 0\)</p>
+        <p>二次方程：$ax^2 + bx + c = 0$</p>
+        <p>$hello world$</p>
+        <div class="code">
+            源代码：$e^{i\pi} + 1 = 0$
+        </div>
+    </div>
+
+    <div class="example">
+        <h2>2. 独立数学公式</h2>
+        <p>泰勒展开式：</p>
+        $$f(x) = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots$$
+        <p>泰勒展开式：</p>
+        \[f(x) = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots\]
+        <div class="code">
+            源代码：$$f(x) = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots$$
+        </div>
+
+        <div>
+            \begin{pmatrix}
+            a & b \\
+            c & d
+            \end{pmatrix}
+        </div>
+        <div>
+            \begin{equation*}
+            E = mc^2
+            \end{equation*}
+        </div>
+        <div>
+            $$\color{red}{x} + \color{blue}{y} \RR$$
+        </div>
+    </div>
+
+    <div class="example">
+        <h2>3. 矩阵</h2>
+        $$
+        \begin{pmatrix}
+        a & b \\
+        c & d
+        \end{pmatrix}
+        \begin{pmatrix}
+        x \\
+        y
+        \end{pmatrix} =
+        \begin{pmatrix}
+        ax + by \\
+        cx + dy
+        \end{pmatrix}
+        $$
+        <div class="code">
+            源代码：$$\begin{pmatrix} a & b \\ c & d \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix} = \begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}$$
+        </div>
+    </div>
+
+    <div class="example">
+        <h2>4. 积分</h2>
+        $$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
+        <div class="code">
+            源代码：$$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
+        </div>
+    </div>
+
+    <div class="example">
+        <h2>5. 求和</h2>
+        $$\sum_{i=1}^n i = \frac{n(n+1)}{2}$$
+        <div class="code">
+            源代码：$$\sum_{i=1}^n i = \frac{n(n+1)}{2}$$
+        </div>
+    </div>
+
+    <div class="example">
+        <h2>6. 极限</h2>
+        $$\lim_{x \to \infty} \frac{1}{x} = 0$$
+        <div class="code">
+            源代码：$$\lim_{x \to \infty} \frac{1}{x} = 0$$
+        </div>
+    </div>
+</body>
+</html> 

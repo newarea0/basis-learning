@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaTeX 示例</title>
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .formula-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>KaTeX 数学公式示例</h1>
+    
+    <div class="formula-container">
+        <h2>1. 基础公式</h2>
+        <p>行内公式示例：<span id="inline-formula"></span></p>
+        <p>块级公式示例：</p>
+        <div id="block-formula"></div>
+    </div>
+
+    <div class="formula-container">
+        <h2>2. 复杂公式</h2>
+        <div id="complex-formula"></div>
+    </div>
+
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"></script>
+    <script>
+        // 行内公式
+        katex.render("E = mc^2", document.getElementById("inline-formula"), {
+            throwOnError: false
+        });
+
+        // 块级公式
+        katex.render("\\int_{a}^{b} f(x) \\, dx = F(b) - F(a)", document.getElementById("block-formula"), {
+            displayMode: true,
+            throwOnError: false
+        });
+
+        // 复杂公式
+        katex.render(
+            "\\begin{aligned}\n" +
+            "\\nabla \\times \\vec{\\mathbf{B}} -\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{E}}}{\\partial t} & = \\frac{4\\pi}{c}\\vec{\\mathbf{j}} \\\\\n" +
+            "\\nabla \\cdot \\vec{\\mathbf{E}} & = 4 \\pi \\rho \\\\\n" +
+            "\\nabla \\times \\vec{\\mathbf{E}}\\, +\\, \\frac1c\\, \\frac{\\partial\\vec{\\mathbf{B}}}{\\partial t} & = \\vec{\\mathbf{0}} \\\\\n" +
+            "\\nabla \\cdot \\vec{\\mathbf{B}} & = 0\n" +
+            "\\end{aligned}",
+            document.getElementById("complex-formula"),
+            {
+                displayMode: true,
+                throwOnError: false
+            }
+        );
+    </script>
+</body>
+</html> 
