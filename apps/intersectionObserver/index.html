@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntersectionObserver 示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            height: 500px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            opacity: 0.5;
+            transition: opacity 0.5s ease;
+        }
+        .section.visible {
+            opacity: 1;
+        }
+        .lazy-image {
+            width: 100%;
+            height: 300px;
+            background-color: #eee;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lazy-image img {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+        .infinite-scroll {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .scroll-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IntersectionObserver 示例</h1>
+        
+        <!-- 示例1：元素可见性检测 -->
+        <h2>1. 元素可见性检测</h2>
+        <div class="section" id="section1">
+            <h3>第一部分</h3>
+            <p>当这个部分进入视口时，会触发动画效果。</p>
+        </div>
+        <div class="section" id="section2">
+            <h3>第二部分</h3>
+            <p>当这个部分进入视口时，会触发动画效果。</p>
+        </div>
+        <div class="section" id="section3">
+            <h3>第三部分</h3>
+            <p>当这个部分进入视口时，会触发动画效果。</p>
+        </div>
+
+        <!-- 示例2：图片懒加载 -->
+        <h2>2. 图片懒加载</h2>
+        <div class="lazy-image">
+            <img data-src="https://picsum.photos/800/400?random=1" alt="懒加载图片1">
+        </div>
+        <div class="lazy-image">
+            <img data-src="https://picsum.photos/800/400?random=2" alt="懒加载图片2">
+        </div>
+        <div class="lazy-image">
+            <img data-src="https://picsum.photos/800/400?random=3" alt="懒加载图片3">
+        </div>
+
+        <!-- 示例3：无限滚动 -->
+        <h2>3. 无限滚动</h2>
+        <div class="infinite-scroll" id="infiniteScroll">
+            <div class="scroll-item">项目 1</div>
+            <div class="scroll-item">项目 2</div>
+            <div class="scroll-item">项目 3</div>
+            <div class="scroll-item">项目 4</div>
+            <div class="scroll-item">项目 5</div>
+            <div class="scroll-item">项目 6</div>
+            <div class="scroll-item">项目 7</div>
+            <div class="scroll-item">项目 8</div>
+            <div class="scroll-item">项目 9</div>
+            <div class="scroll-item">项目 10</div>
+        </div>
+
+        <!-- 示例4：粘性头部 -->
+        <h2>4. 粘性头部</h2>
+        <div class="sticky-header" id="stickyHeader">
+            这是一个粘性头部，当滚动到特定位置时会固定
+        </div>
+        <div style="height: 1000px;">
+            <p>滚动内容区域...</p>
+        </div>
+    </div>
+
+    <script>
+        // 示例1：元素可见性检测
+        const sections = document.querySelectorAll('.section');
+        const sectionObserver = new IntersectionObserver((entries) => {
+            console.log(1111, entries);
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        sections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+
+        // 示例2：图片懒加载
+        const lazyImages = document.querySelectorAll('.lazy-image img');
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.style.display = 'block';
+                    imageObserver.unobserve(img);
+                }
+            });
+        }, {
+            rootMargin: '50px 0px'
+        });
+
+        lazyImages.forEach(img => {
+            imageObserver.observe(img);
+        });
+
+        // 示例3：无限滚动
+        const infiniteScroll = document.getElementById('infiniteScroll');
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // 模拟加载更多数据
+                    const currentItems = document.querySelectorAll('.scroll-item').length;
+                    for (let i = 1; i <= 5; i++) {
+                        const newItem = document.createElement('div');
+                        newItem.className = 'scroll-item';
+                        newItem.textContent = `项目 ${currentItems + i}`;
+                        infiniteScroll.appendChild(newItem);
+                    }
+                }
+            });
+        }, {
+            root: infiniteScroll,
+            threshold: 1.0
+        });
+
+        const lastItem = document.querySelector('.scroll-item:last-child');
+        scrollObserver.observe(lastItem);
+
+        // 示例4：粘性头部
+        const stickyHeader = document.getElementById('stickyHeader');
+        const headerObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    stickyHeader.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                } else {
+                    stickyHeader.style.boxShadow = 'none';
+                }
+            });
+        }, {
+            threshold: 0
+        });
+
+        headerObserver.observe(stickyHeader);
+    </script>
+</body>
+</html>

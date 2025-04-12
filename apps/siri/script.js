@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 语音识别结果处理
   recognition.onresult = (event) => {
+    console.log(1111, event);
     const transcript = event.results[0][0].transcript.trim();
     status.textContent = `你说: "${transcript}"`;
     
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   recognition.onerror = (event) => {
-    console.error('语音识别错误:', event.error);
+    console.log(111, event);
     status.textContent = `识别错误: ${event.error}`;
     resetState();
   };

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    #chat-container {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="messages"></div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const messages = document.getElementById('messages');
+    let autoScrollEnabled = true;
+
+    // 监听滚动事件，判断是否到底部
+    chatContainer.addEventListener('scroll', () => {
+      const threshold = 10; // 允许微小误差
+      const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < threshold;
+      autoScrollEnabled = atBottom;
+    });
+
+    // 新消息到来时调用这个函数
+    function appendMessage(msg) {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = msg;
+      messages.appendChild(messageElement);
+
+      if (autoScrollEnabled) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
+
+    // 模拟接收新消息
+    setInterval(() => {
+      appendMessage("新消息：" + new Date().toLocaleTimeString());
+    }, 2000);
+  </script>
+</body>
+</html>
